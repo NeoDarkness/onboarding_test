@@ -1,8 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  IResponseList,
+  IResponsePagination,
+} from '../common/interfaces/response.interface';
+import { IService } from '../common/interfaces/service.interface';
 import { CustomerDocument } from './entities/customer.entity';
-import { EntityManager, Repository, IsNull, Not, In } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IService } from 'src/common/interfaces/service.interface';
+import {
+  DeepPartial,
+  FindOptionsOrder,
+  FindOptionsSelect,
+  FindOptionsWhere,
+  Repository,
+} from 'typeorm';
 
 @Injectable()
 export class CustomersService implements IService<CustomerDocument> {
@@ -11,27 +21,56 @@ export class CustomersService implements IService<CustomerDocument> {
     private customersRepository: Repository<CustomerDocument>,
   ) {}
 
-  async findById(
-    id: string,
-    manager: EntityManager,
-  ): Promise<CustomerDocument> {
-    return manager.findOne(CustomerDocument, {
-      where: { id, deleted_at: Not(IsNull()) },
-    });
+  async check(id: string): Promise<void> {
+    const exists = await this.customersRepository.exists({ where: { id } });
+    if (!exists)
+      throw new NotFoundException(`Product with id '${id}' does not exists.`);
   }
 
-  async findAll(manager: EntityManager): Promise<CustomerDocument[]> {
-    return manager.find(CustomerDocument, {
-      where: { deleted_at: Not(IsNull()) },
+  async find(params: {
+    page?: number;
+    size?: number;
+    select?: FindOptionsSelect<CustomerDocument>;
+    where?: FindOptionsWhere<CustomerDocument>;
+    order?: FindOptionsOrder<CustomerDocument>;
+  }): Promise<IResponseList<CustomerDocument>> {
+    const { page = 1, size = 10, where, order } = params;
+
+    const skip = (page - 1) * size;
+
+    const [content, total] = await this.customersRepository.findAndCount({
+      skip,
+      take: size,
+      where,
+      order,
     });
+
+    const pagination: IResponsePagination = {
+      total,
+      size,
+      page,
+    };
+
+    return { pagination, content };
   }
 
-  async deleteMany(ids: string[], manager: EntityManager): Promise<void> {
-    await manager
-      .createQueryBuilder()
-      .update(CustomerDocument)
-      .set({ deleted_at: new Date() })
-      .where({ id: In(ids) })
-      .execute();
+  async findOne(
+    where?: FindOptionsWhere<CustomerDocument>,
+  ): Promise<CustomerDocument | null> {
+    return this.customersRepository.findOne({ where });
+  }
+
+  async create(data: DeepPartial<CustomerDocument>): Promise<CustomerDocument> {
+    return this.customersRepository.save(data);
+  }
+
+  async update(params: {
+    where: FindOptionsWhere<CustomerDocument>;
+    data: DeepPartial<CustomerDocument>;
+  }): Promise<CustomerDocument> {
+    const { where, data } = params;
+
+    const { raw } = await this.customersRepository.update(where, data);
+    return raw;
   }
 }

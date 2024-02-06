@@ -9,6 +9,17 @@ export interface IResponseError {
   message: string;
 }
 
+export interface IResponseList<T = unknown> {
+  pagination?: IResponsePagination;
+  content: T[];
+}
+
+export interface IResponseOptions<T = unknown> {
+  errors?: IResponseError[];
+  list?: IResponseList<T>;
+  detail?: T;
+}
+
 export interface IResponse<T = unknown> {
   response_schema: {
     response_code: string;
@@ -16,12 +27,5 @@ export interface IResponse<T = unknown> {
     response_message: string;
   };
 
-  response_output?: {
-    errors?: IResponseError[];
-    list?: {
-      pagination?: IResponsePagination;
-      content: T[];
-    };
-    detail?: T;
-  };
+  response_output?: IResponseOptions<T>;
 }

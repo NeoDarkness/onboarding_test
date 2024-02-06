@@ -1,10 +1,26 @@
-import { EntityManager } from 'typeorm';
-import { BaseDocument } from '../entities/base.entity';
+import {
+  DeepPartial,
+  FindOptionsOrder,
+  FindOptionsSelect,
+  FindOptionsWhere,
+} from 'typeorm';
+import { IResponseList } from './response.interface';
 
-export interface IService<T extends BaseDocument> {
-  findById(id: string, manager?: EntityManager): Promise<T>;
+export interface IService<T = unknown> {
+  findOne(where: FindOptionsWhere<T>): Promise<T>;
 
-  findAll(manager: EntityManager): Promise<T[]>;
+  find(params: {
+    page?: number;
+    size?: number;
+    select?: FindOptionsSelect<T>;
+    where?: FindOptionsWhere<T>;
+    order?: FindOptionsOrder<T>;
+  }): Promise<IResponseList<T>>;
 
-  deleteMany(ids: string[], manager: EntityManager): Promise<void>;
+  create(data: DeepPartial<T>): Promise<T>;
+
+  update(params: {
+    where: FindOptionsWhere<T>;
+    data: DeepPartial<T>;
+  }): Promise<T>;
 }
