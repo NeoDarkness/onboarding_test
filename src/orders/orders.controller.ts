@@ -20,7 +20,7 @@ import { ICurrentCustomer } from '../common/interfaces/current-customer.interfac
 import { ResponseService } from '../common/services/response.service';
 import { EPaymentMethod, OrderDocument } from './entities/order.entity';
 import { JwtAuth } from '../common/decorators/jwt-auth.decorator';
-import { PaginationDTO } from 'src/common/dto/pagination.dto';
+import { PaginationDTO } from '../common/dto/pagination.dto';
 
 const moduleName = 'ORDER';
 
