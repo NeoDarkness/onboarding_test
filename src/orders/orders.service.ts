@@ -257,12 +257,12 @@ export class OrdersService {
 
       await this.productsService.checkStock(products);
 
-      await Promise.all(
-        orderItems.map((orderItem) => {
-          orderItem.product.quantity -= orderItem.quantity;
-          return queryRunner.manager.save(orderItem.product);
-        }),
-      );
+      const submittedProducts = orderItems.map((orderItem) => {
+        orderItem.product.quantity -= orderItem.quantity;
+        return orderItem.product;
+      });
+
+      await queryRunner.manager.save(submittedProducts);
 
       order.status = EOrderStatus.CHECKOUT;
 
