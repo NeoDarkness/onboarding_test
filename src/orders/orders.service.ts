@@ -9,10 +9,20 @@ import {
   EPaymentMethod,
   OrderDocument,
 } from './entities/order.entity';
-import { DataSource, Repository } from 'typeorm';
+import {
+  DataSource,
+  FindOptionsOrder,
+  FindOptionsSelect,
+  FindOptionsWhere,
+  Repository,
+} from 'typeorm';
 import { OrderItemDocument } from './entities/order-item.entity';
 import { CreateOrderProductDTO } from './dto/create-order.dto';
 import { ProductsService } from '../products/products.service';
+import {
+  IResponseList,
+  IResponsePagination,
+} from '../common/interfaces/response.interface';
 
 @Injectable()
 export class OrdersService {
@@ -29,6 +39,54 @@ export class OrdersService {
     const exists = await this.ordersRepository.exists({ where: { id } });
     if (!exists)
       throw new NotFoundException(`Order with id '${id}' does not exists.`);
+  }
+
+  async find(params: {
+    page?: number;
+    size?: number;
+    select?: FindOptionsSelect<OrderDocument>;
+    where?: FindOptionsWhere<OrderDocument>;
+    order?: FindOptionsOrder<OrderDocument>;
+  }): Promise<IResponseList<OrderDocument>> {
+    const { page = 1, size = 10, select, where, order } = params;
+
+    const skip = (page - 1) * size;
+
+    const [content, total] = await this.ordersRepository.findAndCount({
+      skip,
+      take: size,
+      where,
+      order,
+      select,
+      relations: {
+        customer: true,
+        orderItems: {
+          product: true,
+        },
+      },
+    });
+
+    const pagination: IResponsePagination = {
+      total,
+      size,
+      page,
+    };
+
+    return { pagination, content };
+  }
+
+  async findOne(
+    where?: FindOptionsWhere<OrderDocument>,
+  ): Promise<OrderDocument | null> {
+    return this.ordersRepository.findOne({
+      where,
+      relations: {
+        customer: true,
+        orderItems: {
+          product: true,
+        },
+      },
+    });
   }
 
   async create(

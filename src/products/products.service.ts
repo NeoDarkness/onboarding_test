@@ -107,11 +107,12 @@ export class ProductsService
     // bisa gunakan plugin sonar buat check codenya
     const checkAllProducts = products.map(({ productId, quantity }) => {
       const checkData = checkMap[productId];
-      const status = !checkData
-        ? ECheckStockStatus.NOT_EXIST
-        : quantity > checkData.quantity
-        ? ECheckStockStatus.OUT_OF_STOCK
-        : ECheckStockStatus.OK;
+      let status = ECheckStockStatus.OK;
+      if (!checkData) {
+        status = ECheckStockStatus.NOT_EXIST;
+      } else if (quantity > checkData.quantity) {
+        status = ECheckStockStatus.OUT_OF_STOCK;
+      }
       const { price = 0, quantity: stock = 0 } = checkData ?? {};
       const subtotal = price * quantity;
 
