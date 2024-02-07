@@ -138,7 +138,7 @@ describe('OrdersController', () => {
     expect(result.response_output.detail.status).toBe(EOrderStatus.CHECKOUT);
   });
 
-  it('setPayment sould return correct response object', async () => {
+  it('setPayment should return correct response object', async () => {
     const result = await controller.setPayment('mockOrderId', {
       paymentMethod: EPaymentMethod.BANK_TRANSFER,
     });
@@ -150,7 +150,19 @@ describe('OrdersController', () => {
     );
   });
 
-  it('pay sould set status to be complete', async () => {
+  it('setPayment should throw error when set paymentMethod other than bank_transfer', async () => {
+    let error: Error;
+    try {
+      await controller.setPayment('mockOrderId', {
+        paymentMethod: EPaymentMethod.E_WALLET,
+      });
+    } catch (e) {
+      error = e;
+    }
+    expect(error).toBeDefined();
+  });
+
+  it('pay should set status to be complete', async () => {
     const result = await controller.pay('mockOrderId');
     expect(result.response_output.detail.status).toBe(EOrderStatus.COMPLETE);
   });

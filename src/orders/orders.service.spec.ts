@@ -118,12 +118,12 @@ describe('OrdersService', () => {
     expect(result.status).toBe(EOrderStatus.IN_CART);
   });
 
-  it('checkout sould set status to be checkout', async () => {
+  it('checkout should set status to be checkout', async () => {
     const result = await service.checkout('mockOrderId');
     expect(result.status).toBe(EOrderStatus.CHECKOUT);
   });
 
-  it('setPayment sould set status to be waiting_for_payment and paymentMethod to be bank_transfer', async () => {
+  it('setPayment should set status to be waiting_for_payment and paymentMethod to be bank_transfer', async () => {
     const result = await service.setPayment(
       'mockOrderId',
       EPaymentMethod.BANK_TRANSFER,
@@ -132,7 +132,7 @@ describe('OrdersService', () => {
     expect(result.paymentMethod).toBe(EPaymentMethod.BANK_TRANSFER);
   });
 
-  it('pay sould set status to be complete', async () => {
+  it('pay should set status to be complete', async () => {
     const result = await service.pay('mockOrderId');
     expect(result.status).toBe(EOrderStatus.COMPLETE);
   });

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -18,7 +19,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { CurrentCustomer } from '../common/decorators/current-customer.decorator';
 import { ICurrentCustomer } from '../common/interfaces/current-customer.interface';
 import { ResponseService } from '../common/services/response.service';
-import { OrderDocument } from './entities/order.entity';
+import { EPaymentMethod, OrderDocument } from './entities/order.entity';
 import { JwtAuth } from '../common/decorators/jwt-auth.decorator';
 import { PaginationDTO } from '../common/dto/pagination.dto';
 import { SetPaymentDTO } from './dto/set-payment.dto';
@@ -125,6 +126,11 @@ export class OrdersController {
   @Put(':id/set-payment')
   async setPayment(@Param('id') id: string, @Body() body: SetPaymentDTO) {
     const { paymentMethod } = body;
+
+    if (paymentMethod !== EPaymentMethod.BANK_TRANSFER) {
+      throw new BadRequestException('Only bank transfer payments are accepted');
+    }
+
     const detail = await this.ordersService.setPayment(id, paymentMethod);
 
     return ResponseService.responseBuilder<OrderDocument>(
