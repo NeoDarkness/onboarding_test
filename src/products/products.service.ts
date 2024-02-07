@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import {
   IResponseList,
@@ -20,13 +21,61 @@ import {
 import { IBaseService } from '../common/interfaces/base-service.interface';
 import { ICheckStockResult } from './interfaces/check-stock.interface';
 import { ECheckStockStatus } from './enums/check-stock.enum';
+import * as _ from 'lodash';
 
 @Injectable()
-export class ProductsService implements IBaseService<ProductDocument> {
+export class ProductsService
+  implements IBaseService<ProductDocument>, OnModuleInit
+{
   constructor(
     @InjectRepository(ProductDocument)
     private productsRepository: Repository<ProductDocument>,
   ) {}
+
+  async onModuleInit() {
+    const products = {
+      product1: {
+        name: 'product1',
+        description: 'product1',
+        quantity: 10,
+        price: 50000,
+        createdAt: new Date(),
+      },
+      product2: {
+        name: 'product2',
+        description: 'product2',
+        quantity: 20,
+        price: 500000,
+        createdAt: new Date(),
+      },
+      product3: {
+        name: 'product3',
+        description: 'product3',
+        quantity: 0,
+        price: 10000,
+        createdAt: new Date(),
+      },
+    };
+
+    const names = Object.keys(products);
+
+    const exists = await this.productsRepository.find({
+      where: { name: In(names) },
+      select: {
+        name: true,
+      },
+    });
+
+    const existsList = exists.map(({ name }) => name);
+
+    const diff = _.difference(names, existsList);
+
+    if (diff.length > 0) {
+      await this.productsRepository.save(
+        diff.map((username) => products[username]),
+      );
+    }
+  }
 
   async check(id: string): Promise<void> {
     const exists = await this.productsRepository.exists({ where: { id } });

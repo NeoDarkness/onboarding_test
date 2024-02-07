@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import {
   IResponseList,
   IResponsePagination,
@@ -11,15 +11,62 @@ import {
   FindOptionsOrder,
   FindOptionsSelect,
   FindOptionsWhere,
+  In,
   Repository,
 } from 'typeorm';
+import { hashPassword } from 'src/common/utils/password.util';
+import * as _ from 'lodash';
 
 @Injectable()
-export class CustomersService implements IBaseService<CustomerDocument> {
+export class CustomersService
+  implements IBaseService<CustomerDocument>, OnModuleInit
+{
   constructor(
     @InjectRepository(CustomerDocument)
     private customersRepository: Repository<CustomerDocument>,
   ) {}
+
+  async onModuleInit() {
+    const customers = {
+      user1: {
+        password: hashPassword('123456'),
+        username: 'user1',
+        name: 'user1',
+        email: 'user1@user1.user1',
+        address: 'user1',
+        phone: '11111111111',
+        createdAt: new Date(),
+      },
+      user2: {
+        password: hashPassword('123456'),
+        username: 'user2',
+        name: 'user2',
+        email: 'user2@user2.user2',
+        address: 'user2',
+        phone: '22222222222',
+        createdAt: new Date(),
+      },
+    };
+
+    const usernames = Object.keys(customers);
+
+    const exists = await this.customersRepository.find({
+      where: { username: In(usernames) },
+      select: {
+        username: true,
+      },
+    });
+
+    const existsList = exists.map(({ username }) => username);
+
+    const diff = _.difference(usernames, existsList);
+
+    if (diff.length > 0) {
+      await this.customersRepository.save(
+        diff.map((username) => customers[username]),
+      );
+    }
+  }
 
   async check(id: string): Promise<void> {
     const exists = await this.customersRepository.exists({ where: { id } });
