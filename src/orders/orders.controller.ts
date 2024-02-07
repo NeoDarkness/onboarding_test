@@ -80,10 +80,9 @@ export class OrdersController {
     @Body() body: CreateOrderDTO,
     @CurrentCustomer() customer: ICurrentCustomer,
   ) {
-    const { products } = body;
     const { customerId } = customer;
 
-    const detail = await this.ordersService.create(customerId, products);
+    const detail = await this.ordersService.create(customerId, body);
 
     return ResponseService.responseBuilder<OrderDocument>(
       moduleName,

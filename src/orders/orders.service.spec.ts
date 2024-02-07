@@ -29,6 +29,10 @@ describe('OrdersService', () => {
     createdAt: new Date(),
     paymentMethod: null,
     status: EOrderStatus.IN_CART,
+    name: 'mock',
+    email: 'mock@mock.mock',
+    address: 'mock',
+    phone: '000000000',
   };
 
   const mockOrdersService = {

@@ -17,7 +17,7 @@ import {
   Repository,
 } from 'typeorm';
 import { OrderItemDocument } from './entities/order-item.entity';
-import { CreateOrderProductDTO } from './dto/create-order.dto';
+import { CreateOrderDTO, CreateOrderProductDTO } from './dto/create-order.dto';
 import { ProductsService } from '../products/products.service';
 import {
   IResponseList,
@@ -137,14 +137,19 @@ export class OrdersService {
 
   async create(
     consumerId: string,
-    products?: CreateOrderProductDTO[],
+    data: CreateOrderDTO,
   ): Promise<OrderDocument> {
+    const { products, name, email, phone, address } = data;
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
       const order = this.ordersRepository.create({
+        name,
+        email,
+        phone,
+        address,
         customer: {
           id: consumerId,
         },

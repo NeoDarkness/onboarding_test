@@ -49,4 +49,16 @@ export class OrderDocument extends BaseDocument {
     onDelete: 'CASCADE',
   })
   orderItems: OrderItemDocument[];
+
+  @Column()
+  name: string;
+
+  @Column()
+  email: string;
+
+  @Column()
+  phone: string;
+
+  @Column({ type: 'text' })
+  address: string;
 }
