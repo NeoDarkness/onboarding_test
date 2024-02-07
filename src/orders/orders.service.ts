@@ -57,7 +57,7 @@ export class OrdersService {
         );
 
         await Promise.all(
-          checkAllProducts.map(({ productId, quantity, subtotal }) => {
+          checkAllProducts.map(({ productId, quantity, subtotal, price }) => {
             totalAmount += subtotal;
             const orderItem = this.orderItemsRepository.create({
               product: {
@@ -66,6 +66,7 @@ export class OrdersService {
               order: {
                 id: order.id,
               },
+              price,
               quantity,
               subtotal,
             });
@@ -129,11 +130,11 @@ export class OrdersService {
         order.totalAmount -= exists.subtotal;
       }
 
-      const [{ subtotal, quantity }] = await this.productsService.checkStock([
-        product,
-      ]);
+      const [{ subtotal, quantity, price }] =
+        await this.productsService.checkStock([product]);
 
       if (exists) {
+        exists.price = price;
         exists.quantity = quantity;
         exists.subtotal = subtotal;
       } else {
@@ -144,6 +145,7 @@ export class OrdersService {
           order: {
             id: orderId,
           },
+          price,
           quantity,
           subtotal,
         });
