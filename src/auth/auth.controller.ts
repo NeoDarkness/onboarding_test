@@ -3,7 +3,6 @@ import {
   Controller,
   HttpStatus,
   Post,
-  Res,
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
@@ -13,7 +12,6 @@ import { ResponseService } from '../common/services/response.service';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { LoginDTO } from './dto/login.dto';
-import { Response } from 'express';
 import { CustomerDocument } from '../customers/entities/customer.entity';
 import { CurrentCustomer } from '../common/decorators/current-customer.decorator';
 
@@ -28,19 +26,16 @@ export class AuthController {
   @UseGuards(AuthGuard('local'))
   @Post('login')
   async create(
-    @Res() res: Response,
     @Body() _body: LoginDTO,
     @CurrentCustomer() customer: Omit<CustomerDocument, 'password'>,
   ) {
-    const detail = this.authService.login(customer);
+    const detail = this.authService.getLoginData(customer);
 
-    const output = ResponseService.responseBuilder(
+    return ResponseService.responseBuilder(
       moduleName,
       HttpStatus.OK,
       'Suksess',
       { detail },
     );
-
-    return res.status(HttpStatus.OK).json(output);
   }
 }

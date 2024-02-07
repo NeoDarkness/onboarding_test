@@ -76,6 +76,7 @@ describe('OrdersService', () => {
       mockOrderDocument.status = EOrderStatus.COMPLETE;
       return mockOrderDocument;
     }),
+    check: jest.fn().mockReturnValue(undefined),
   };
 
   beforeAll(async () => {
@@ -120,5 +121,15 @@ describe('OrdersService', () => {
   it('pay sould set status to be complete', async () => {
     const result = await service.pay('mockOrderId');
     expect(result.status).toBe(EOrderStatus.COMPLETE);
+  });
+
+  it('check should not throw error', async () => {
+    let error: Error;
+    try {
+      await service.check('mockOrderId');
+    } catch (e) {
+      error = e;
+    }
+    expect(error).not.toBeDefined();
   });
 });

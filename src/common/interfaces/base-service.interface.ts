@@ -6,7 +6,7 @@ import {
 } from 'typeorm';
 import { IResponseList } from './response.interface';
 
-export interface IService<T = unknown> {
+export interface IBaseService<T = unknown> {
   findOne(where: FindOptionsWhere<T>): Promise<T>;
 
   find(params: {

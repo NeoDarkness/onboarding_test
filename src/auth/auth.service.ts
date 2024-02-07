@@ -23,7 +23,7 @@ export class AuthService {
     return null;
   }
 
-  login(customer: Omit<CustomerDocument, 'password'>): {
+  getLoginData(customer: Omit<CustomerDocument, 'password'>): {
     customer: Omit<CustomerDocument, 'password'>;
     accessToken: string;
     refreshToken: string;

@@ -3,7 +3,7 @@ import {
   IResponseList,
   IResponsePagination,
 } from '../common/interfaces/response.interface';
-import { IService } from '../common/interfaces/service.interface';
+import { IBaseService } from '../common/interfaces/base-service.interface';
 import { CustomerDocument } from './entities/customer.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -15,7 +15,7 @@ import {
 } from 'typeorm';
 
 @Injectable()
-export class CustomersService implements IService<CustomerDocument> {
+export class CustomersService implements IBaseService<CustomerDocument> {
   constructor(
     @InjectRepository(CustomerDocument)
     private customersRepository: Repository<CustomerDocument>,

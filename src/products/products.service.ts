@@ -17,12 +17,12 @@ import {
   FindOptionsSelect,
   In,
 } from 'typeorm';
-import { IService } from '../common/interfaces/service.interface';
+import { IBaseService } from '../common/interfaces/base-service.interface';
 import { ICheckStockResult } from './interfaces/check-stock.interface';
 import { ECheckStockStatus } from './enums/check-stock.enum';
 
 @Injectable()
-export class ProductsService implements IService<ProductDocument> {
+export class ProductsService implements IBaseService<ProductDocument> {
   constructor(
     @InjectRepository(ProductDocument)
     private productsRepository: Repository<ProductDocument>,

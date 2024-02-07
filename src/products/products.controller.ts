@@ -29,22 +29,20 @@ export class ProductsController {
   constructor(private productsService: ProductsService) {}
 
   @Get(':id')
-  async get(@Res() res: Response, @Param('id') id: string) {
+  async get(@Param('id') id: string) {
     await this.productsService.check(id);
     const detail = await this.productsService.findOne({ id });
 
-    const output = ResponseService.responseBuilder<ProductDocument>(
+    return ResponseService.responseBuilder<ProductDocument>(
       moduleName,
       HttpStatus.OK,
       'Suksess',
       { detail },
     );
-
-    return res.status(HttpStatus.OK).json(output);
   }
 
   @Get()
-  async list(@Res() res: Response, @Query() query: ListProductDTO) {
+  async list(@Query() query: ListProductDTO) {
     const { page, size, name } = query;
 
     const where: FindOptionsWhere<ProductDocument> = {};
@@ -58,28 +56,24 @@ export class ProductsController {
       where,
     });
 
-    const output = ResponseService.responseBuilder(
+    return ResponseService.responseBuilder(
       moduleName,
       HttpStatus.OK,
       'Suksess',
       { list },
     );
-
-    return res.status(HttpStatus.OK).json(output);
   }
 
   @Post()
-  async create(@Res() res: Response, @Body() body: CreateProductDTO) {
+  async create(@Body() body: CreateProductDTO) {
     const detail = await this.productsService.create(body);
 
-    const output = ResponseService.responseBuilder(
+    return ResponseService.responseBuilder(
       moduleName,
       HttpStatus.CREATED,
       'Suksess',
       { detail },
     );
-
-    return res.status(HttpStatus.CREATED).json(output);
   }
 
   @Put(':id')
@@ -94,13 +88,11 @@ export class ProductsController {
       data: body,
     });
 
-    const output = ResponseService.responseBuilder(
+    return ResponseService.responseBuilder(
       moduleName,
       HttpStatus.OK,
       'Suksess',
       { detail },
     );
-
-    return res.status(HttpStatus.OK).json(output);
   }
 }

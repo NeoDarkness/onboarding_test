@@ -5,12 +5,10 @@ import {
   Param,
   Post,
   Put,
-  Res,
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
 import { CustomExceptionFilter } from '../common/filters/custom-exception.filter';
 import { CreateOrderDTO, CreateOrderProductDTO } from './dto/create-order.dto';
 import { OrdersService } from './orders.service';
@@ -20,6 +18,7 @@ import { CurrentCustomer } from '../common/decorators/current-customer.decorator
 import { ICurrentCustomer } from '../common/interfaces/current-customer.interface';
 import { ResponseService } from '../common/services/response.service';
 import { EPaymentMethod, OrderDocument } from './entities/order.entity';
+import { JwtAuth } from 'src/common/decorators/jwt-auth.decorator';
 
 const moduleName = 'ORDER';
 
@@ -32,11 +31,9 @@ export class OrdersController {
     private productsService: ProductsService,
   ) {}
 
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
+  @JwtAuth
   @Post()
   async create(
-    @Res() res: Response,
     @Body() body: CreateOrderDTO,
     @CurrentCustomer() customer: ICurrentCustomer,
   ) {
@@ -45,21 +42,17 @@ export class OrdersController {
 
     const detail = await this.ordersService.create(customerId, products);
 
-    const output = ResponseService.responseBuilder<OrderDocument>(
+    return ResponseService.responseBuilder<OrderDocument>(
       moduleName,
       HttpStatus.CREATED,
       'Suksess',
       { detail },
     );
-
-    return res.status(HttpStatus.CREATED).json(output);
   }
 
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
+  @JwtAuth
   @Post(':id/add-product')
   async addProduct(
-    @Res() res: Response,
     @Param('id') id: string,
     @Body() body: CreateOrderProductDTO,
   ) {
@@ -70,64 +63,54 @@ export class OrdersController {
 
     const detail = await this.ordersService.addProduct(id, body);
 
-    const output = ResponseService.responseBuilder<OrderDocument>(
+    return ResponseService.responseBuilder<OrderDocument>(
       moduleName,
-      HttpStatus.OK,
+      HttpStatus.CREATED,
       'Suksess',
       { detail },
     );
-
-    return res.status(HttpStatus.OK).json(output);
   }
 
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
+  @JwtAuth
   @Put(':id/checkout')
-  async checkout(@Res() res: Response, @Param('id') id: string) {
+  async checkout(@Param('id') id: string) {
     const detail = await this.ordersService.checkout(id);
 
-    const output = ResponseService.responseBuilder<OrderDocument>(
+    return ResponseService.responseBuilder<OrderDocument>(
       moduleName,
       HttpStatus.OK,
       'Suksess',
       { detail },
     );
-
-    return res.status(HttpStatus.OK).json(output);
   }
 
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
+  @JwtAuth
   @Put(':id/set-payment')
-  async setPayment(@Res() res: Response, @Param('id') id: string) {
+  async setPayment(@Param('id') id: string) {
     const detail = await this.ordersService.setPayment(
       id,
       EPaymentMethod.BANK_TRANSFER,
     );
 
-    const output = ResponseService.responseBuilder<OrderDocument>(
+    return ResponseService.responseBuilder<OrderDocument>(
       moduleName,
       HttpStatus.OK,
       'Suksess',
       { detail },
     );
-
-    return res.status(HttpStatus.OK).json(output);
   }
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Put(':id/pay')
-  async pay(@Res() res: Response, @Param('id') id: string) {
+  async pay(@Param('id') id: string) {
     const detail = await this.ordersService.pay(id);
 
-    const output = ResponseService.responseBuilder<OrderDocument>(
+    return ResponseService.responseBuilder<OrderDocument>(
       moduleName,
       HttpStatus.OK,
       'Suksess',
       { detail },
     );
-
-    return res.status(HttpStatus.OK).json(output);
   }
 }
