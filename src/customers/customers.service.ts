@@ -114,10 +114,12 @@ export class CustomersService
   async update(params: {
     where: FindOptionsWhere<CustomerDocument>;
     data: DeepPartial<CustomerDocument>;
-  }): Promise<CustomerDocument> {
+  }): Promise<void> {
     const { where, data } = params;
+    await this.customersRepository.update(where, data);
+  }
 
-    const { raw } = await this.customersRepository.update(where, data);
-    return raw;
+  async delete(where: FindOptionsWhere<CustomerDocument>): Promise<void> {
+    await this.customersRepository.delete(where);
   }
 }

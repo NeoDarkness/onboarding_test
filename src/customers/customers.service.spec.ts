@@ -35,14 +35,8 @@ describe('CustomersService', () => {
       content: mockCustomerDocuments,
     }),
     findOne: jest.fn().mockReturnValue(mockCustomerDocuments[0]),
-    update: jest.fn().mockImplementation((params) => {
-      const { data } = params;
-      const customer = mockCustomerDocuments[0];
-      for (const [key, value] of Object.entries(data)) {
-        customer[key] = value;
-      }
-      return customer;
-    }),
+    update: jest.fn().mockReturnValue(undefined),
+    delete: jest.fn().mockReturnValue(undefined),
     check: jest.fn().mockReturnValue(undefined),
   };
 
@@ -77,13 +71,27 @@ describe('CustomersService', () => {
     expect(result).toMatchObject(mockCustomerDocuments[0]);
   });
 
-  it('update should update property', async () => {
-    const result = await service.update({
-      where: { id: 'mockCustomerId' },
-      data: { name: 'updatedName' },
-    });
-    expect(result).toBeDefined();
-    expect(result.name).toBe('updatedName');
+  it('update should not throw error', async () => {
+    let error: Error;
+    try {
+      await service.update({
+        where: { id: 'mockCustomerId' },
+        data: { name: 'updatedName' },
+      });
+    } catch (e) {
+      error = e;
+    }
+    expect(error).not.toBeDefined();
+  });
+
+  it('delete should not throw error', async () => {
+    let error: Error;
+    try {
+      await service.delete({ id: 'mockCustomerId' });
+    } catch (e) {
+      error = e;
+    }
+    expect(error).not.toBeDefined();
   });
 
   it('check should not throw error', async () => {

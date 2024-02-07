@@ -28,6 +28,8 @@ export class CustomExceptionFilter implements ExceptionFilter {
       'Internal server error.',
     );
 
+    console.log(exception);
+
     if (exception instanceof HttpException) {
       const status = exception.getStatus();
       const { message, cause: errors } = exception as {

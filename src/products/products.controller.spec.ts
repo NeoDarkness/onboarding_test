@@ -34,14 +34,8 @@ describe('ProductsController', () => {
       content: mockProductDocuments,
     }),
     findOne: jest.fn().mockReturnValue(mockProductDocuments[0]),
-    update: jest.fn().mockImplementation((params) => {
-      const { data } = params;
-      const product = mockProductDocuments[0];
-      for (const [key, value] of Object.entries(data)) {
-        product[key] = value;
-      }
-      return product;
-    }),
+    update: jest.fn().mockReturnValue(undefined),
+    delete: jest.fn().mockReturnValue(undefined),
     check: jest.fn().mockReturnValue(undefined),
   };
 
@@ -81,6 +75,10 @@ describe('ProductsController', () => {
   it('update should return correct response object', async () => {
     const result = await controller.update('', new UpdateProductDTO());
     expect(result).toBeDefined();
-    expect(result.response_output.detail).toBeDefined();
+  });
+
+  it('delete should return correct response object', async () => {
+    const result = await controller.delete('');
+    expect(result).toBeDefined();
   });
 });

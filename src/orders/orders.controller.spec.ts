@@ -139,7 +139,9 @@ describe('OrdersController', () => {
   });
 
   it('setPayment sould return correct response object', async () => {
-    const result = await controller.setPayment('mockOrderId');
+    const result = await controller.setPayment('mockOrderId', {
+      paymentMethod: EPaymentMethod.BANK_TRANSFER,
+    });
     expect(result.response_output.detail.status).toBe(
       EOrderStatus.WAITING_FOR_PAYMENT,
     );

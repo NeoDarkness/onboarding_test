@@ -82,6 +82,7 @@ describe('OrdersService', () => {
       pagination: { size: 10, page: 1, total: 1 },
       content: [mockOrderDocument],
     }),
+    addOrderItems: jest.fn().mockReturnValue(undefined),
   };
 
   beforeAll(async () => {
@@ -140,6 +141,18 @@ describe('OrdersService', () => {
     let error: Error;
     try {
       await service.check('mockOrderId');
+    } catch (e) {
+      error = e;
+    }
+    expect(error).not.toBeDefined();
+  });
+
+  it('addOrderItems should not throw error', async () => {
+    let error: Error;
+    try {
+      await service.addOrderItems(mockOrderDocument, [
+        { productId: 'mockProductId', quantity: 10 },
+      ]);
     } catch (e) {
       error = e;
     }

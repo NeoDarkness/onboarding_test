@@ -22,5 +22,7 @@ export interface IBaseService<T = unknown> {
   update(params: {
     where: FindOptionsWhere<T>;
     data: DeepPartial<T>;
-  }): Promise<T>;
+  }): Promise<void>;
+
+  delete(where: FindOptionsWhere<T>): Promise<void>;
 }

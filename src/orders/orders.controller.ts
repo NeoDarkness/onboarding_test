@@ -18,9 +18,10 @@ import { AuthGuard } from '@nestjs/passport';
 import { CurrentCustomer } from '../common/decorators/current-customer.decorator';
 import { ICurrentCustomer } from '../common/interfaces/current-customer.interface';
 import { ResponseService } from '../common/services/response.service';
-import { EPaymentMethod, OrderDocument } from './entities/order.entity';
+import { OrderDocument } from './entities/order.entity';
 import { JwtAuth } from '../common/decorators/jwt-auth.decorator';
 import { PaginationDTO } from '../common/dto/pagination.dto';
+import { SetPaymentDTO } from './dto/set-payment.dto';
 
 const moduleName = 'ORDER';
 
@@ -122,11 +123,9 @@ export class OrdersController {
 
   @JwtAuth
   @Put(':id/set-payment')
-  async setPayment(@Param('id') id: string) {
-    const detail = await this.ordersService.setPayment(
-      id,
-      EPaymentMethod.BANK_TRANSFER,
-    );
+  async setPayment(@Param('id') id: string, @Body() body: SetPaymentDTO) {
+    const { paymentMethod } = body;
+    const detail = await this.ordersService.setPayment(id, paymentMethod);
 
     return ResponseService.responseBuilder<OrderDocument>(
       moduleName,

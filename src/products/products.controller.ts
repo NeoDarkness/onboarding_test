@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Param,
@@ -78,7 +79,7 @@ export class ProductsController {
   @Put(':id')
   async update(@Param('id') id: string, @Body() body: UpdateProductDTO) {
     await this.productsService.check(id);
-    const detail = await this.productsService.update({
+    await this.productsService.update({
       where: { id },
       data: body,
     });
@@ -87,7 +88,19 @@ export class ProductsController {
       moduleName,
       HttpStatus.OK,
       'Suksess',
-      { detail },
+    );
+  }
+
+  @Delete(':id')
+  async delete(@Param('id') id: string) {
+    await this.productsService.check(id);
+
+    await this.productsService.delete({ id });
+
+    return ResponseService.responseBuilder(
+      moduleName,
+      HttpStatus.OK,
+      'Suksess',
     );
   }
 }

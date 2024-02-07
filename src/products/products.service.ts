@@ -103,8 +103,6 @@ export class ProductsService
       check.map(({ id, ...rest }) => [id, rest]),
     );
 
-    // fix ternary operation nya
-    // bisa gunakan plugin sonar buat check codenya
     const checkAllProducts = products.map(({ productId, quantity }) => {
       const checkData = checkMap[productId];
       let status = ECheckStockStatus.OK;
@@ -182,11 +180,12 @@ export class ProductsService
   async update(params: {
     where: FindOptionsWhere<ProductDocument>;
     data: DeepPartial<ProductDocument>;
-  }): Promise<ProductDocument> {
+  }): Promise<void> {
     const { where, data } = params;
+    await this.productsRepository.update(where, data);
+  }
 
-    // kenapa harus return raw query nya ya?
-    const { raw } = await this.productsRepository.update(where, data);
-    return raw;
+  async delete(where: FindOptionsWhere<ProductDocument>): Promise<void> {
+    await this.productsRepository.delete(where);
   }
 }

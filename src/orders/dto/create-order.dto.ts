@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import {
   IsArray,
   IsNotEmpty,
@@ -18,7 +18,6 @@ export class CreateOrderProductDTO {
 
   @ApiProperty()
   @IsNotEmpty()
-  @Transform(({ value }) => parseInt(value))
   @IsNumber()
   @Min(1)
   quantity: number;

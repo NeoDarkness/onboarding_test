@@ -89,6 +89,52 @@ export class OrdersService {
     });
   }
 
+  async addOrderItems(
+    order: OrderDocument,
+    products?: CreateOrderProductDTO[],
+  ): Promise<void> {
+    order.orderItems ??= [];
+    if (products || products.length > 0) {
+      const orderItemMap = Object.fromEntries(
+        order.orderItems.map((orderItem) => [orderItem.product.id, orderItem]),
+      );
+
+      const mergeProducts = products.map(({ productId, quantity }) => {
+        const oldQuantity = orderItemMap[productId]?.quantity ?? 0;
+        return { productId, quantity: oldQuantity + quantity };
+      });
+
+      const checkAllProducts = await this.productsService.checkStock(
+        mergeProducts,
+      );
+
+      checkAllProducts.forEach(({ productId, quantity, subtotal, price }) => {
+        const exists = orderItemMap[productId];
+        if (exists) {
+          exists.quantity = quantity;
+          exists.price = price;
+          exists.subtotal = subtotal;
+        } else {
+          const orderItem = this.orderItemsRepository.create({
+            product: {
+              id: productId,
+            },
+            order: {
+              id: order.id,
+            },
+            price,
+            quantity,
+            subtotal,
+          });
+
+          order.orderItems.push(orderItem);
+        }
+      });
+    }
+
+    order.totalAmount = order.orderItems.reduce((p, c) => p + c.subtotal, 0);
+  }
+
   async create(
     consumerId: string,
     products?: CreateOrderProductDTO[],
@@ -98,47 +144,16 @@ export class OrdersService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      let totalAmount = 0;
-
       const order = this.ordersRepository.create({
         customer: {
           id: consumerId,
         },
-        totalAmount,
+        totalAmount: 0,
       });
 
       await queryRunner.manager.save(order);
 
-      // bisa dibuat fuction terpisah untuk check/loop product
-      if (products || products.length > 0) {
-        const checkAllProducts = await this.productsService.checkStock(
-          products,
-        );
-
-        // const orderItems: OrderItemDocument[] = [];
-        // await queryRunner.manager.save(orderItems);
-
-        await Promise.all(
-          checkAllProducts.map(({ productId, quantity, subtotal, price }) => {
-            totalAmount += subtotal;
-            const orderItem = this.orderItemsRepository.create({
-              product: {
-                id: productId,
-              },
-              order: {
-                id: order.id,
-              },
-              price,
-              quantity,
-              subtotal,
-            });
-
-            // bisa pakai bulk insert
-            return queryRunner.manager.save(orderItem);
-          }),
-        );
-        order.totalAmount = totalAmount;
-      }
+      await this.addOrderItems(order, products);
 
       const { id } = await queryRunner.manager.save(order);
 
@@ -188,38 +203,7 @@ export class OrdersService {
         throw new BadRequestException('Unable to add product.');
       }
 
-      const exists = order.orderItems.find((e) => e.product.id === productId);
-      if (exists) {
-        product.quantity += exists.quantity;
-        order.totalAmount -= exists.subtotal;
-      }
-
-      const [{ subtotal, quantity, price }] =
-        await this.productsService.checkStock([product]);
-
-      // exists ini setelah diisi ulang valuenya lalu diapakan ya?
-      // kalau gak direturn atau disave lebih baik tidak usah diolah
-      if (exists) {
-        exists.price = price;
-        exists.quantity = quantity;
-        exists.subtotal = subtotal;
-      } else {
-        const orderItem = this.orderItemsRepository.create({
-          product: {
-            id: productId,
-          },
-          order: {
-            id: orderId,
-          },
-          price,
-          quantity,
-          subtotal,
-        });
-
-        order.orderItems.push(orderItem);
-      }
-
-      order.totalAmount += subtotal;
+      await this.addOrderItems(order, [product]);
 
       const { id } = await queryRunner.manager.save(order);
 
