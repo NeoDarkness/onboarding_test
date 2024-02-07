@@ -25,7 +25,7 @@ export class AuthController {
 
   @UseGuards(AuthGuard('local'))
   @Post('login')
-  async create(
+  async login(
     @Body() _body: LoginDTO,
     @CurrentCustomer() customer: Omit<CustomerDocument, 'password'>,
   ) {
@@ -33,7 +33,7 @@ export class AuthController {
 
     return ResponseService.responseBuilder(
       moduleName,
-      HttpStatus.OK,
+      HttpStatus.CREATED,
       'Suksess',
       { detail },
     );

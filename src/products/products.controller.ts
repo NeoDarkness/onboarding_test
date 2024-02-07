@@ -7,18 +7,17 @@ import {
   Post,
   Put,
   Query,
-  Res,
   UseFilters,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { ResponseService } from '../common/services/response.service';
-import { Response } from 'express';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateProductDTO } from './dto/create-product.dto';
 import { ListProductDTO } from './dto/list-product.dto';
 import { CustomExceptionFilter } from '../common/filters/custom-exception.filter';
 import { ProductDocument } from './entities/product.entity';
 import { FindOptionsWhere, ILike } from 'typeorm';
+import { UpdateProductDTO } from './dto/update-product.dto';
 
 const moduleName = 'PRODUCT';
 
@@ -77,11 +76,7 @@ export class ProductsController {
   }
 
   @Put(':id')
-  async update(
-    @Res() res: Response,
-    @Param('id') id: string,
-    @Body() body: CreateProductDTO,
-  ) {
+  async update(@Param('id') id: string, @Body() body: UpdateProductDTO) {
     await this.productsService.check(id);
     const detail = await this.productsService.update({
       where: { id },

@@ -12,13 +12,12 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CustomExceptionFilter } from '../common/filters/custom-exception.filter';
 import { CreateOrderDTO, CreateOrderProductDTO } from './dto/create-order.dto';
 import { OrdersService } from './orders.service';
-import { ProductsService } from '../products/products.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentCustomer } from '../common/decorators/current-customer.decorator';
 import { ICurrentCustomer } from '../common/interfaces/current-customer.interface';
 import { ResponseService } from '../common/services/response.service';
 import { EPaymentMethod, OrderDocument } from './entities/order.entity';
-import { JwtAuth } from 'src/common/decorators/jwt-auth.decorator';
+import { JwtAuth } from '../common/decorators/jwt-auth.decorator';
 
 const moduleName = 'ORDER';
 
@@ -26,10 +25,7 @@ const moduleName = 'ORDER';
 @UseFilters(new CustomExceptionFilter(moduleName))
 @Controller('orders')
 export class OrdersController {
-  constructor(
-    private ordersService: OrdersService,
-    private productsService: ProductsService,
-  ) {}
+  constructor(private ordersService: OrdersService) {}
 
   @JwtAuth
   @Post()
@@ -56,11 +52,6 @@ export class OrdersController {
     @Param('id') id: string,
     @Body() body: CreateOrderProductDTO,
   ) {
-    const { productId } = body;
-
-    await this.ordersService.check(id);
-    await this.productsService.check(productId);
-
     const detail = await this.ordersService.addProduct(id, body);
 
     return ResponseService.responseBuilder<OrderDocument>(
