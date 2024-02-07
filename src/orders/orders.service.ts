@@ -51,10 +51,14 @@ export class OrdersService {
 
       await queryRunner.manager.save(order);
 
+      // bisa dibuat fuction terpisah untuk check/loop product
       if (products || products.length > 0) {
         const checkAllProducts = await this.productsService.checkStock(
           products,
         );
+
+        // const orderItems: OrderItemDocument[] = [];
+        // await queryRunner.manager.save(orderItems);
 
         await Promise.all(
           checkAllProducts.map(({ productId, quantity, subtotal, price }) => {
@@ -70,6 +74,8 @@ export class OrdersService {
               quantity,
               subtotal,
             });
+
+            // bisa pakai bulk insert
             return queryRunner.manager.save(orderItem);
           }),
         );
@@ -133,6 +139,8 @@ export class OrdersService {
       const [{ subtotal, quantity, price }] =
         await this.productsService.checkStock([product]);
 
+      // exists ini setelah diisi ulang valuenya lalu diapakan ya?
+      // kalau gak direturn atau disave lebih baik tidak usah diolah
       if (exists) {
         exists.price = price;
         exists.quantity = quantity;

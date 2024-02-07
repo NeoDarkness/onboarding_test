@@ -103,6 +103,8 @@ export class ProductsService
       check.map(({ id, ...rest }) => [id, rest]),
     );
 
+    // fix ternary operation nya
+    // bisa gunakan plugin sonar buat check codenya
     const checkAllProducts = products.map(({ productId, quantity }) => {
       const checkData = checkMap[productId];
       const status = !checkData
@@ -182,6 +184,7 @@ export class ProductsService
   }): Promise<ProductDocument> {
     const { where, data } = params;
 
+    // kenapa harus return raw query nya ya?
     const { raw } = await this.productsRepository.update(where, data);
     return raw;
   }
