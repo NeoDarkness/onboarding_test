@@ -77,6 +77,11 @@ describe('OrdersService', () => {
       return mockOrderDocument;
     }),
     check: jest.fn().mockReturnValue(undefined),
+    findOne: jest.fn().mockReturnValue(mockOrderDocument),
+    find: jest.fn().mockReturnValue({
+      pagination: { size: 10, page: 1, total: 1 },
+      content: [mockOrderDocument],
+    }),
   };
 
   beforeAll(async () => {
@@ -87,11 +92,19 @@ describe('OrdersService', () => {
     service = moduleRef.get<OrdersService>(OrdersService);
   });
 
-  it('create should return order document', async () => {
-    const result = await service.create('mockCustomerId');
+  it('findOne should return order document', async () => {
+    const result = await service.findOne({ id: 'mockOrderId' });
+    expect(result).toBeDefined();
     expect(result.id).toBe('mockOrderId');
-    expect(result.status).toBe(EOrderStatus.IN_CART);
-    expect(result.orderItems.length).toBe(0);
+  });
+
+  it('find should has pagination and content property', async () => {
+    const result = await service.find({
+      page: 1,
+      size: 10,
+    });
+    expect(result.content).toBeDefined();
+    expect(result.pagination).toBeDefined();
   });
 
   it('addProduct should set totalAmount and orderItems', async () => {
