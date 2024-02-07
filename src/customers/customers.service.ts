@@ -14,7 +14,7 @@ import {
   In,
   Repository,
 } from 'typeorm';
-import { hashPassword } from 'src/common/utils/password.util';
+import { hashPassword } from '../common/utils/password.util';
 import * as _ from 'lodash';
 
 @Injectable()
