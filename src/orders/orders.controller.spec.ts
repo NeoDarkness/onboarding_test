@@ -8,7 +8,7 @@ import { CustomerDocument } from '../customers/entities/customer.entity';
 import { OrdersService } from './orders.service';
 import { CreateOrderDTO, CreateOrderProductDTO } from './dto/create-order.dto';
 import { OrdersController } from './orders.controller';
-import { PaginationDTO } from 'src/common/dto/pagination.dto';
+import { PaginationDTO } from '../common/dto/pagination.dto';
 
 describe('OrdersController', () => {
   let controller: OrdersController;
