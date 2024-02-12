@@ -15,6 +15,7 @@ export class OrderItemDocument extends BaseDocument {
   @ManyToOne(() => ProductDocument, {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
+    cascade: true,
   })
   @JoinColumn({ name: 'product_id' })
   product: ProductDocument;

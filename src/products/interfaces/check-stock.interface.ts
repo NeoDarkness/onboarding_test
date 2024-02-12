@@ -5,5 +5,6 @@ export interface ICheckStockResult {
   quantity: number;
   subtotal: number;
   price: number;
+  stock: number;
   status: ECheckStockStatus;
 }

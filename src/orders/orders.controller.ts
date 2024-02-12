@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -13,16 +12,15 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CustomExceptionFilter } from '../common/filters/custom-exception.filter';
-import { CreateOrderDTO, CreateOrderProductDTO } from './dto/create-order.dto';
+import { CreateOrderDTO } from './dto/create-order.dto';
 import { OrdersService } from './orders.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentCustomer } from '../common/decorators/current-customer.decorator';
 import { ICurrentCustomer } from '../common/interfaces/current-customer.interface';
 import { ResponseService } from '../common/services/response.service';
-import { EPaymentMethod, OrderDocument } from './entities/order.entity';
+import { OrderDocument } from './entities/order.entity';
 import { JwtAuth } from '../common/decorators/jwt-auth.decorator';
 import { PaginationDTO } from '../common/dto/pagination.dto';
-import { SetPaymentDTO } from './dto/set-payment.dto';
 
 const moduleName = 'ORDER';
 
@@ -87,54 +85,6 @@ export class OrdersController {
     return ResponseService.responseBuilder<OrderDocument>(
       moduleName,
       HttpStatus.CREATED,
-      'Suksess',
-      { detail },
-    );
-  }
-
-  @JwtAuth
-  @Post(':id/add-product')
-  async addProduct(
-    @Param('id') id: string,
-    @Body() body: CreateOrderProductDTO,
-  ) {
-    const detail = await this.ordersService.addProduct(id, body);
-
-    return ResponseService.responseBuilder<OrderDocument>(
-      moduleName,
-      HttpStatus.CREATED,
-      'Suksess',
-      { detail },
-    );
-  }
-
-  @JwtAuth
-  @Put(':id/checkout')
-  async checkout(@Param('id') id: string) {
-    const detail = await this.ordersService.checkout(id);
-
-    return ResponseService.responseBuilder<OrderDocument>(
-      moduleName,
-      HttpStatus.OK,
-      'Suksess',
-      { detail },
-    );
-  }
-
-  @JwtAuth
-  @Put(':id/set-payment')
-  async setPayment(@Param('id') id: string, @Body() body: SetPaymentDTO) {
-    const { paymentMethod } = body;
-
-    if (paymentMethod !== EPaymentMethod.BANK_TRANSFER) {
-      throw new BadRequestException('Only bank transfer payments are accepted');
-    }
-
-    const detail = await this.ordersService.setPayment(id, paymentMethod);
-
-    return ResponseService.responseBuilder<OrderDocument>(
-      moduleName,
-      HttpStatus.OK,
       'Suksess',
       { detail },
     );

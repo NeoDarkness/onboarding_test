@@ -91,26 +91,29 @@ export class OrdersService {
 
   async addOrderItems(
     order: OrderDocument,
-    products?: CreateOrderProductDTO[],
+    products: CreateOrderProductDTO[],
   ): Promise<void> {
     order.orderItems ??= [];
-    if (products || products.length > 0) {
-      const orderItemMap = Object.fromEntries(
-        order.orderItems.map((orderItem) => [orderItem.product.id, orderItem]),
-      );
 
-      const mergeProducts = products.map(({ productId, quantity }) => {
-        const oldQuantity = orderItemMap[productId]?.quantity ?? 0;
-        return { productId, quantity: oldQuantity + quantity };
-      });
+    const orderItemMap = Object.fromEntries(
+      order.orderItems.map((orderItem) => [orderItem.product.id, orderItem]),
+    );
 
-      const checkAllProducts = await this.productsService.checkStock(
-        mergeProducts,
-      );
+    const mergeProducts = products.map(({ productId, quantity }) => {
+      const oldQuantity = orderItemMap[productId]?.quantity ?? 0;
+      return { productId, quantity: oldQuantity + quantity };
+    });
 
-      checkAllProducts.forEach(({ productId, quantity, subtotal, price }) => {
+    const checkAllProducts = await this.productsService.checkStock(
+      mergeProducts,
+    );
+
+    checkAllProducts.forEach(
+      ({ productId, quantity, stock, subtotal, price }) => {
         const exists = orderItemMap[productId];
         if (exists) {
+          const diffQuantity = quantity - exists.quantity;
+          exists.product.quantity -= diffQuantity;
           exists.quantity = quantity;
           exists.price = price;
           exists.subtotal = subtotal;
@@ -118,6 +121,7 @@ export class OrdersService {
           const orderItem = this.orderItemsRepository.create({
             product: {
               id: productId,
+              quantity: stock - quantity,
             },
             order: {
               id: order.id,
@@ -129,8 +133,8 @@ export class OrdersService {
 
           order.orderItems.push(orderItem);
         }
-      });
-    }
+      },
+    );
 
     order.totalAmount = order.orderItems.reduce((p, c) => p + c.subtotal, 0);
   }
@@ -139,7 +143,12 @@ export class OrdersService {
     consumerId: string,
     data: CreateOrderDTO,
   ): Promise<OrderDocument> {
-    const { products, name, email, phone, address } = data;
+    const { products, name, email, phone, address, paymentMethod } = data;
+
+    if (paymentMethod !== EPaymentMethod.BANK_TRANSFER) {
+      throw new BadRequestException('Only bank transfer payments are accepted');
+    }
+
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -150,6 +159,7 @@ export class OrdersService {
         email,
         phone,
         address,
+        paymentMethod,
         customer: {
           id: consumerId,
         },
@@ -181,143 +191,6 @@ export class OrdersService {
     }
   }
 
-  async addProduct(
-    orderId: string,
-    product: CreateOrderProductDTO,
-  ): Promise<OrderDocument> {
-    const queryRunner = this.dataSource.createQueryRunner();
-
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    try {
-      const { productId } = product;
-
-      await this.check(orderId);
-      await this.productsService.check(productId);
-
-      const order = await this.ordersRepository.findOne({
-        where: { id: orderId },
-        relations: {
-          orderItems: {
-            product: true,
-          },
-        },
-      });
-
-      if (order.status !== EOrderStatus.IN_CART) {
-        throw new BadRequestException('Unable to add product.');
-      }
-
-      await this.addOrderItems(order, [product]);
-
-      const { id } = await queryRunner.manager.save(order);
-
-      await queryRunner.commitTransaction();
-
-      return this.ordersRepository.findOne({
-        where: { id },
-        relations: {
-          customer: true,
-          orderItems: {
-            product: true,
-          },
-        },
-      });
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-      throw err;
-    } finally {
-      await queryRunner.release();
-    }
-  }
-
-  async checkout(orderId: string): Promise<OrderDocument> {
-    const queryRunner = this.dataSource.createQueryRunner();
-
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    try {
-      await this.check(orderId);
-
-      const order = await this.ordersRepository.findOne({
-        where: { id: orderId },
-        relations: {
-          orderItems: {
-            product: true,
-          },
-        },
-      });
-      const { orderItems } = order;
-
-      if (order.status !== EOrderStatus.IN_CART || orderItems.length === 0) {
-        throw new BadRequestException('Unable to checkout.');
-      }
-
-      const products = orderItems.map(
-        ({ product: { id: productId }, quantity }) => ({
-          productId,
-          quantity,
-        }),
-      );
-
-      await this.productsService.checkStock(products);
-
-      const submittedProducts = orderItems.map((orderItem) => {
-        orderItem.product.quantity -= orderItem.quantity;
-        return orderItem.product;
-      });
-
-      await queryRunner.manager.save(submittedProducts);
-
-      order.status = EOrderStatus.CHECKOUT;
-
-      const { id } = await queryRunner.manager.save(order);
-
-      await queryRunner.commitTransaction();
-
-      return this.ordersRepository.findOne({
-        where: { id },
-        relations: {
-          customer: true,
-          orderItems: {
-            product: true,
-          },
-        },
-      });
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-      throw err;
-    } finally {
-      await queryRunner.release();
-    }
-  }
-
-  async setPayment(
-    orderId: string,
-    paymentMethod: EPaymentMethod,
-  ): Promise<OrderDocument> {
-    await this.check(orderId);
-
-    const order = await this.ordersRepository.findOne({
-      where: { id: orderId },
-      relations: {
-        customer: true,
-        orderItems: {
-          product: true,
-        },
-      },
-    });
-
-    if (order.status !== EOrderStatus.CHECKOUT) {
-      throw new BadRequestException('Unable to select payment.');
-    }
-
-    order.paymentMethod = paymentMethod;
-    order.status = EOrderStatus.WAITING_FOR_PAYMENT;
-
-    return this.ordersRepository.save(order);
-  }
-
   async pay(orderId: string): Promise<OrderDocument> {
     await this.check(orderId);
 
@@ -335,7 +208,7 @@ export class OrdersService {
       throw new BadRequestException('Unable to pay.');
     }
 
-    order.status = EOrderStatus.COMPLETE;
+    order.status = EOrderStatus.COMPLETED;
 
     return this.ordersRepository.save(order);
   }

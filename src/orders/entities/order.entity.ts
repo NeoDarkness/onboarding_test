@@ -4,10 +4,8 @@ import { OrderItemDocument } from './order-item.entity';
 import { BaseDocument } from '../../common/entities/base.entity';
 
 export enum EOrderStatus {
-  IN_CART = 'in_cart',
-  CHECKOUT = 'checkout',
   WAITING_FOR_PAYMENT = 'waiting_for_payment',
-  COMPLETE = 'complete',
+  COMPLETED = 'completed',
   FAILED = 'failed',
 }
 
@@ -19,7 +17,6 @@ export enum EPaymentMethod {
 @Entity({ name: 'orders' })
 export class OrderDocument extends BaseDocument {
   @ManyToOne(() => CustomerDocument, {
-    cascade: true,
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
   })
@@ -32,16 +29,15 @@ export class OrderDocument extends BaseDocument {
   @Column({
     type: 'enum',
     enum: EOrderStatus,
-    default: EOrderStatus.IN_CART,
+    default: EOrderStatus.WAITING_FOR_PAYMENT,
   })
   status: EOrderStatus;
 
   @Column({
     type: 'enum',
     enum: EPaymentMethod,
-    nullable: true,
   })
-  paymentMethod?: EPaymentMethod;
+  paymentMethod: EPaymentMethod;
 
   @OneToMany(() => OrderItemDocument, (orderItem) => orderItem.order, {
     cascade: true,

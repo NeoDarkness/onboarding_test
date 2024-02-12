@@ -1,16 +1,17 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
-  IsOptional,
   IsPhoneNumber,
   IsUUID,
   Min,
   ValidateNested,
 } from 'class-validator';
+import { EPaymentMethod } from '../entities/order.entity';
 
 export class CreateOrderProductDTO {
   @ApiProperty()
@@ -26,12 +27,12 @@ export class CreateOrderProductDTO {
 }
 
 export class CreateOrderDTO {
-  @ApiPropertyOptional()
+  @ApiProperty({ type: [CreateOrderProductDTO] })
   @Type(() => CreateOrderProductDTO)
   @ValidateNested({ each: true })
+  @IsNotEmpty()
   @IsArray()
-  @IsOptional()
-  products?: CreateOrderProductDTO[];
+  products: CreateOrderProductDTO[];
 
   @ApiProperty()
   @IsNotEmpty()
@@ -50,4 +51,9 @@ export class CreateOrderDTO {
   @ApiProperty()
   @IsNotEmpty()
   address: string;
+
+  @ApiProperty({ enum: EPaymentMethod })
+  @IsNotEmpty()
+  @IsEnum(EPaymentMethod)
+  paymentMethod: EPaymentMethod;
 }
