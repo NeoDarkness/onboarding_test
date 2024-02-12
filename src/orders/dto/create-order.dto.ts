@@ -55,5 +55,5 @@ export class CreateOrderDTO {
   @ApiProperty({ enum: EPaymentMethod })
   @IsNotEmpty()
   @IsEnum(EPaymentMethod)
-  paymentMethod: EPaymentMethod;
+  payment_method: EPaymentMethod;
 }

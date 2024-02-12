@@ -14,7 +14,7 @@ describe('CustomersService', () => {
       email: 'mock@mock.mock',
       address: 'mock',
       phone: '000000000',
-      createdAt: new Date(),
+      created_at: new Date(),
     },
     {
       id: 'mockCustomerId2',
@@ -24,7 +24,7 @@ describe('CustomersService', () => {
       email: 'mock2@mock2.mock2',
       address: 'mock2',
       phone: '222222222',
-      createdAt: new Date(),
+      created_at: new Date(),
     },
   ];
 

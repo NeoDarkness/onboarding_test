@@ -60,7 +60,7 @@ export class OrdersService {
       select,
       relations: {
         customer: true,
-        orderItems: {
+        order_items: {
           product: true,
         },
       },
@@ -82,7 +82,7 @@ export class OrdersService {
       where,
       relations: {
         customer: true,
-        orderItems: {
+        order_items: {
           product: true,
         },
       },
@@ -93,10 +93,10 @@ export class OrdersService {
     order: OrderDocument,
     products: CreateOrderProductDTO[],
   ): Promise<void> {
-    order.orderItems ??= [];
+    order.order_items ??= [];
 
     const orderItemMap = Object.fromEntries(
-      order.orderItems.map((orderItem) => [orderItem.product.id, orderItem]),
+      order.order_items.map((orderItem) => [orderItem.product.id, orderItem]),
     );
 
     const mergeProducts = products.map(({ productId, quantity }) => {
@@ -131,21 +131,21 @@ export class OrdersService {
             subtotal,
           });
 
-          order.orderItems.push(orderItem);
+          order.order_items.push(orderItem);
         }
       },
     );
 
-    order.totalAmount = order.orderItems.reduce((p, c) => p + c.subtotal, 0);
+    order.total_amount = order.order_items.reduce((p, c) => p + c.subtotal, 0);
   }
 
   async create(
     consumerId: string,
     data: CreateOrderDTO,
   ): Promise<OrderDocument> {
-    const { products, name, email, phone, address, paymentMethod } = data;
+    const { products, name, email, phone, address, payment_method } = data;
 
-    if (paymentMethod !== EPaymentMethod.BANK_TRANSFER) {
+    if (payment_method !== EPaymentMethod.BANK_TRANSFER) {
       throw new BadRequestException('Only bank transfer payments are accepted');
     }
 
@@ -159,11 +159,11 @@ export class OrdersService {
         email,
         phone,
         address,
-        paymentMethod,
+        payment_method,
         customer: {
           id: consumerId,
         },
-        totalAmount: 0,
+        total_amount: 0,
       });
 
       await queryRunner.manager.save(order);
@@ -178,7 +178,7 @@ export class OrdersService {
         where: { id },
         relations: {
           customer: true,
-          orderItems: {
+          order_items: {
             product: true,
           },
         },
@@ -198,7 +198,7 @@ export class OrdersService {
       where: { id: orderId },
       relations: {
         customer: true,
-        orderItems: {
+        order_items: {
           product: true,
         },
       },

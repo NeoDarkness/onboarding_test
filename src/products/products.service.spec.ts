@@ -11,7 +11,7 @@ describe('ProductsService', () => {
       description: 'mock',
       price: 100000,
       quantity: 10,
-      createdAt: new Date(),
+      created_at: new Date(),
     },
     {
       id: 'mockPrductId2',
@@ -19,7 +19,7 @@ describe('ProductsService', () => {
       description: 'mock2',
       price: 200000,
       quantity: 20,
-      createdAt: new Date(),
+      created_at: new Date(),
     },
   ];
 

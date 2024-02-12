@@ -14,7 +14,7 @@ describe('AuthController', () => {
     email: 'mock@mock.mock',
     address: 'mock',
     phone: '000000000',
-    createdAt: new Date(),
+    created_at: new Date(),
   };
 
   const mockAuthService = {

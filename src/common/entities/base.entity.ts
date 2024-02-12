@@ -5,14 +5,13 @@ export abstract class BaseDocument {
   id: string;
 
   @Column({
-    name: 'created_at',
     default: () => 'CURRENT_TIMESTAMP',
   })
-  createdAt: Date;
+  created_at: Date;
 
-  @Column({ name: 'updatedt_at', nullable: true })
-  updatedAt?: Date;
+  @Column({ nullable: true })
+  updated_at?: Date;
 
-  @Column({ name: 'deleted_at', nullable: true })
-  deletedAt?: Date;
+  @Column({ nullable: true })
+  deleted_at?: Date;
 }

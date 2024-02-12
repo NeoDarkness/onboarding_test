@@ -16,16 +16,16 @@ describe('OrdersController', () => {
     email: 'mock@mock.mock',
     address: 'mock',
     phone: '000000000',
-    createdAt: new Date(),
+    created_at: new Date(),
   };
 
   const mockOrderDocument: OrderDocument = {
     id: 'mockOrderId',
     customer: mockCustomerDocument,
-    orderItems: [],
-    totalAmount: 0,
-    createdAt: new Date(),
-    paymentMethod: null,
+    order_items: [],
+    total_amount: 0,
+    created_at: new Date(),
+    payment_method: null,
     status: EOrderStatus.WAITING_FOR_PAYMENT,
     name: 'mock',
     email: 'mock@mock.mock',

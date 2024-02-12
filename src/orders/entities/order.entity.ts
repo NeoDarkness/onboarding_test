@@ -23,8 +23,8 @@ export class OrderDocument extends BaseDocument {
   @JoinColumn({ name: 'customer_id' })
   customer: CustomerDocument;
 
-  @Column({ name: 'total_amount', type: 'double precision' })
-  totalAmount: number;
+  @Column({ type: 'double precision' })
+  total_amount: number;
 
   @Column({
     type: 'enum',
@@ -37,14 +37,14 @@ export class OrderDocument extends BaseDocument {
     type: 'enum',
     enum: EPaymentMethod,
   })
-  paymentMethod: EPaymentMethod;
+  payment_method: EPaymentMethod;
 
   @OneToMany(() => OrderItemDocument, (orderItem) => orderItem.order, {
     cascade: true,
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
   })
-  orderItems: OrderItemDocument[];
+  order_items: OrderItemDocument[];
 
   @Column()
   name: string;
