@@ -17,7 +17,7 @@ export class CreateOrderProductDTO {
   @ApiProperty()
   @IsNotEmpty()
   @IsUUID()
-  productId: string;
+  product_id: string;
 
   @ApiProperty()
   @IsNotEmpty()

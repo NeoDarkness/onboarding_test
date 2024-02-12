@@ -87,7 +87,7 @@ describe('OrdersService', () => {
     let error: Error;
     try {
       await service.addOrderItems(mockOrderDocument, [
-        { productId: 'mockProductId', quantity: 10 },
+        { product_id: 'mockProductId', quantity: 10 },
       ]);
     } catch (e) {
       error = e;

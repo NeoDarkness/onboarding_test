@@ -99,10 +99,12 @@ export class OrdersService {
       order.order_items.map((orderItem) => [orderItem.product.id, orderItem]),
     );
 
-    const mergeProducts = products.map(({ productId, quantity }) => {
-      const oldQuantity = orderItemMap[productId]?.quantity ?? 0;
-      return { productId, quantity: oldQuantity + quantity };
-    });
+    const mergeProducts = products.map(
+      ({ product_id: productId, quantity }) => {
+        const oldQuantity = orderItemMap[productId]?.quantity ?? 0;
+        return { productId, quantity: oldQuantity + quantity };
+      },
+    );
 
     const checkAllProducts = await this.productsService.checkStock(
       mergeProducts,
