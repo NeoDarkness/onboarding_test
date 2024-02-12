@@ -4,13 +4,35 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { ValidationError } from 'class-validator';
+import { IResponseError } from './common/interfaces/response.interface';
+
+function nestedObjectMessageFormatter(
+  error: ValidationError,
+  errorMessages: IResponseError[],
+  fields: string[] = [],
+) {
+  fields.push(error.property);
+
+  if (error.children.length === 0) {
+    const field = fields.join('.');
+    const [message] = Object.values(error.constraints);
+    errorMessages.push({ field, message });
+  }
+
+  for (const child of error.children) {
+    nestedObjectMessageFormatter(child, errorMessages, [...fields]);
+  }
+}
 
 function exceptionFactory(errors: ValidationError[]) {
+  const errorMessages: IResponseError[] = [];
+
+  for (const error of errors) {
+    nestedObjectMessageFormatter(error, errorMessages);
+  }
+
   return new BadRequestException('The request payload is not valid.', {
-    cause: errors.map((e) => ({
-      field: e.property,
-      message: Object.values(e.constraints).join(', '),
-    })),
+    cause: errorMessages,
   });
 }
 
